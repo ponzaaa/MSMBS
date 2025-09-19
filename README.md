@@ -10,4 +10,15 @@ We first visualize the gene expression data on the E. coli core map and then use
 - `e_coli_core.json` 
 - `e_coli_core_expression.csv` 
 
+
+
+# Assignment 2: Epidemiological Model Parameter exploration
+ In this assignment, we implement a SIRD function. We then use this to explore two different epidemiological scenarios.
+ Our goal is to see how these parameters influence the outcome of an epidemic in terms of total infections, deaths and epidemic peak.
+ At the end we analyse the effects of an intervention and discuss how effective such an intervention would be in real life.
+ 
+## Files
+
+- `Assignment2.ipynb` – main notebook (Exercises 1–3)
+
 ---
