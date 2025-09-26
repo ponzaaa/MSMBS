@@ -26,6 +26,21 @@ We first visualize the gene expression data on the E. coli core map and then use
 # Assignment 3: Network Biology
 This assignment involves an analysis of cancer-causing mutations using Boolean networks, building upon the provided notebook. We model four distinct mutations in a cell's regulatory network, in addition to the normal network. Each mutation simulates a common cancer-related pathway disruption: a p53 knockout, which eliminates a key tumor suppressor; an MYC amplification which causes an oncogene to be always active; an MDM2 overexpression, which disrupts the p53 pathway; and a mutation that always results in the death of the cell. We perform a scenario analysis and test how the network responds to these conditions. Additionally, we identified all stable states the network can reach and determined the percentage of initial states that lead to a "cancer-like" outcome. This will allow for a comparative study of how each mutation changes the network's dynamics.
 
+### Which mutation is most dangerous?
+From the data we have gathered, mutation A, or the p53 Knockout (always OFF) seems the most dangerous. B and C are also highly oncogenic but A is even more due to the following reasons: 
+
+scenario outcomes end in profileration/oncogenic states only(no apoptosis):
+• healthy -> growth=1, death=0
+• stressed (DNA_damage=1) -> growth=1, death=0 <- cancer-like
+• oncogene hijacked -> growth=1, death=0
+
+When we consider the attractors: A has 2 attractors and both are cancer-like (proliferation, oncogenic). 
+
+Speed to malignant state: In the stressed scenario A reaches the cancer-like steady state in 4 steps, whereas B/C take 7. Faster convergence means less opportunity for recovery/repair.
+
+Comparison to baseline: Normal has 3 attractors with the split being ≈ 50.0% Proliferation, 46.9% Apoptosis, 3.1% Oncogenic (so about ≈ 53.1% cancer-like overall). Mutation A removes the apoptotic ending entirely and leads to cancer-like situations only.
+
+
 ### What is the role of Feedback loops?
 Feedback loops are regulatory circuits where the output of a process influences its own activity, either amplifying it (positive feedback) or dampening it (negative feedback).  These loops allow cells to dynamically adapt to internal and external changes. For example, in the MYC → MDM2 → p53 loop, MYC promotes MDM2, which suppresses p53 and keeps growth active. p53 can in turn regulate MYC and MDM2, forming a negative feedback loop that maintains controlled cell growth.
 
