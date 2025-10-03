@@ -55,4 +55,12 @@ Lastly, a limitation related to the previous point, the model lacks nuanced temp
 
 - `Assignment3.ipynb` – main notebook (Building and analysing a network with mutations)
 
+
+
+# Assignment 4: Plant Systems Biology
+This assignment is an investigation into a computational model of a plant-pathogen infection, where the pathogen facilitates its spread by secreting a chemical that degrades cell wall stability. We analyze and interpret the model's existing structure through simulation, code review, and pseudocode. 
+
+### Task 3
+![task3](Assignment4/Assignment4_task3.png)
+
 ---
