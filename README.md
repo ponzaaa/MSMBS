@@ -60,7 +60,20 @@ Lastly, a limitation related to the previous point, the model lacks nuanced temp
 # Assignment 4: Plant Systems Biology
 This assignment is an investigation into a computational model of a plant-pathogen infection, where the pathogen facilitates its spread by secreting a chemical that degrades cell wall stability. We analyze and interpret the model's existing structure through simulation, code review, and pseudocode. 
 
+### Task 1
+![task1](Assignment4/Assignment4_task1.png)
+
+Running the simulation we observe that the pathogen rapidly attacks the cell walls in the first hour and is able to weaken a lot of them.
+We can see deformation on the infected cells due to a loss of sturctural integrity caused by the wall weaking chemicals. The pathogen is able to penetrate deeper into tissue.
+After the 2nd hour the infection slows down but the pathogen is still steadily growing and infecfting more cells.
+
+### Task 2
+
+CellHouseKeeping is called on each cell at every step of the simulataion. It governs how the cells behave, for example how they grow and how they respond to chemichals. If cell is a pathogen (type 2) its target area is increased, simulating the faster expansion of a pathogen.
+The function sets the base length of wall elements to 25 units. It also measures the level of pathogen chemicals in the cell and limits it's maximum effect. If the pathogen chemical level is too high stiffness is reduced to simulate weaker walls. Otherwise the stifness is kept at a default of 2.5.
+
 ### Task 3
 ![task3](Assignment4/Assignment4_task3.png)
 
 ---
+![Initial scenario](https://drive.google.com/file/d/1fQeFQlbHjtX4vM53U3VIJIEM9RvzXoAn/view?usp=sharing)
