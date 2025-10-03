@@ -75,5 +75,71 @@ The function sets the base length of wall elements to 25 units. It also measures
 ### Task 3
 ![task3](Assignment4/Assignment4_task3.png)
 
+### Task 4
+Decrease:
+The chemical stays localized near the pathogen and the gradient is steeper. There is very high C(0) next to the pathogen and it quickly drops a few cells away. The infection advances slowly and the soft/weak region is small. At the end only a small patch remains
+
+Increase:
+The chemical spreads much farther from the source. More distant cells recieve a low C(0) so more cells show some weakening earlier. Local concentration near the pathogen is lower and the nearest walls can be less damaged than in the decrease scenario but the area of compromised walls is larger and it progresses faster
+
+
+
+### Task 5
+We can add one new mechanism
+
+S – defense signal produced by healthy cells when they detect the pathogen chemical C0
+
+Right after infection, healthy cells that detect the pathogen chemical above a small threshold begin secreting the defense signal S. It then diffuses to neighboring cells to help them and decays gradually. In regions where S is present walls become both stiffer and less sensitive to C0 weakening effectso the infection advances more slowly. Changing the size of the effects (ALPHA_STIFF, BETA_C0) will determine how much it stops any infection
+
+### So we have some paramenters that it operates with
+
+    THRESHOLD_DETECT = 0.2     # C0 level that triggers S production
+    
+    K_SECRETE_S      = 0.05    # how fast an active cell adds S 
+    
+    D_S               = 0.02   # diffusion coefficient of S
+    
+    K_DECAY_S         = 0.01   # how much S decays per hour
+    
+    ALPHA_STIFF       = 0.5    # stiffness boost from S
+    
+    BETA_C0           = 0.4    # reduction of C0 weakening effect by S
+    
+    S_HALF            = 0.30   # S level that gives half of the defense effect
+
+### this will be in CellHouseKeeping
+
+we read the current local concentrations
+
+    c = cell.C0
+    
+    s = cell.S
+
+cells detect C0 high and make S
+
+    if cell.type == HEALTHY and c > THRESHOLD_DETECT:
+
+    cell.S += K_SECRETE_S * dt
+
+
+Then stiffness is computed with defense and the weakening from C0 applies
+
+    C_effect      = c                       //C effect
+    S_effect      = HILL(s, S_HALF)        //S effect 
+    C_effect_mod  = C_effect * (1 - BETA_C0 * S_effect)   //how strong is C weakening effect
+    stiff_from_C  = stiffness_base * f_weak(C_effect_mod)  //weakening of the cell from C
+    boost         = (1 + ALPHA_STIFF * S_effect)  //boosting of the cell from S
+    cell.stiffness = stiff_from_C * boost    //final cell stiffness 
+
+
+
+### then this will be in the transport step to spread it and dissapear
+
+    Diffuse(C0, D_C) 
+    
+    Diffuse(S,  D_S)
+    S -= K_DECAY_S * S * dt
+
+
 ---
 ![Initial scenario](https://drive.google.com/file/d/1fQeFQlbHjtX4vM53U3VIJIEM9RvzXoAn/view?usp=sharing)
