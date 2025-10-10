@@ -144,28 +144,199 @@ Then stiffness is computed with defense and the weakening from C0 applies
 ---
 ![Initial scenario](https://drive.google.com/file/d/1fQeFQlbHjtX4vM53U3VIJIEM9RvzXoAn/view?usp=sharing)
 
+# Assignment 5: Neuroanatomically Constrained Modeling of the Visual System
 
-# Assignment 5: Modeling in Neuroscience
+This project implements and analyzes a neural network model of the human visual system. The model's architecture is not arbitrary; it is constrained by real-world anatomical data for cell density and structural connectivity, extracted from the EBRAINS human brain atlas.
 
+---
+## Phase 1: Anatomical Data Collection
 
-### Task 2
-Human 
+The first and most critical phase was to gather anatomical data to serve as a blueprint for our model.
 
-Ventral:
-V1, V2, V4, Lateral occipital complex, Fusiform gyrus, IT
-Dorsal:
-V1, V2, V3A, V5e, MST, Intraparietal sulcus
+### Tools and Atlas Selection
+We used the **`siibra`** Python library to programmatically access the **EBRAINS/HBP Human Brain Atlas**.
 
-Monkey
+-   **Atlas:** We selected the `Multilevel Human Atlas`.
+-   **Parcellation:** We chose the **`Julich-Brain Cytoarchitectonic Atlas (v3.1)`**. This parcellation is ideal because it defines brain regions based on their cellular micro-structure (cytoarchitecture), which is closely related to function. We chose the latest version available (v3.1) to ensure the most up-to-date map.
 
-Ventral:
-V1, V2, V4, TEO, TE, IT
-Dorsal:
-V1, V2, V3, V5, MST, LIP
+### Regions of Interest (ROIs)
+Based on the canonical two-streams hypothesis of vision, we selected six key regions spanning the ventral ("what") and dorsal ("where/how") pathways:
+-   **`hOc1` (V1):** Primary Visual Cortex, the entry point for visual information.
+-   **`hOc2` (V2):** Secondary Visual Cortex, a crucial early processing stage.
+-   **`hOc4v` (V4):** A mid-level ventral stream area, important for form and color.
+-   **`hOc5` (MT):** A key dorsal stream area, specialized for motion processing.
+-   **`FG1` / `FG2` (IT):** Regions in the Fusiform Gyrus, part of the Inferior Temporal cortex, the final stage of the ventral stream for object recognition.
 
-Marmoset
+### Data Extraction
+For each region, we extracted two types of data:
+1.  **Cell Density:** We queried for `CellDensityProfile` features derived from the BigBrain high-resolution histological dataset. After an iterative process, we determined the correct method was to access the `.data` attribute and calculate the mean of the first column, yielding an average density in `cells/0.1mm³`. This value would inform the relative size (number of channels) of each layer in our model.
+2.  **Structural Connectivity:** We queried for `StreamlineCounts` from the Human Connectome Project (HCP) cohort. Our initial `KeyError` revealed that the connectivity matrix uses hemisphere-specific `Region` objects as keys. We developed a robust method to find the correct key for the 'left' hemisphere and extract the connectivity profile. We then filtered this profile to the top 5 *external* connections to create a manageable wiring diagram.
 
-Ventral: 
-V1, V2, V4, TEO, TE, Inferotemporal-like cortex
-Dorsal: 
-V1, V2, V5, MST, LIP, Posterior parietal cortex
+### Final Anatomical Blueprint
+The automated `siibra` script produced the following JSON object, which serves as the final blueprint for our human model:
+```json
+{
+    "hOc1": {
+        "connectivity": {
+            "Area hOc3v (LingG) left": 35125.04044117647,
+            "Area hOc2 (V2, 18) left": 28349.60661764706,
+            "Area hOc3d (Cuneus) left": 22377.98161764706,
+            "Frontal-to-Occipital (GapMap) left": 18723.5,
+            "Area hOc4v (LingG) left": 8105.621323529412
+        },
+        "cell_density": "84.90"
+    },
+    "hOc2": {
+        "connectivity": {
+            "Area hOc1 (V1, 17, CalcS) left": 28349.60661764706,
+            "Area hOc3d (Cuneus) left": 14656.661764705883,
+            "Area hOc3v (LingG) left": 2529.2904411764707,
+            "Frontal-to-Occipital (GapMap) left": 1667.5330882352941,
+            "Area hOc4lp (LOC) left": 1575.9779411764705
+        },
+        "cell_density": "80.67"
+    },
+    "hOc4v": {
+        "connectivity": {
+            "Area hOc3v (LingG) left": 21455.40073529412,
+            "Area hOc1 (V1, 17, CalcS) left": 8105.621323529412,
+            "Area FG1 (FusG) left": 6120.371323529412,
+            "Area hOc4lp (LOC) left": 5248.761029411765,
+            "Area FG2 (FusG) left": 4819.672794117647
+        },
+        "cell_density": "Not found"
+    },
+    "hOc5": {
+        "connectivity": {
+            "Area hOc4la (LOC) left": 2611.8970588235293,
+            "Temporal-to-Parietal (GapMap) left": 2314.202205882353,
+            "Area hOc4lp (LOC) left": 621.1102941176471,
+            "Area FG2 (FusG) left": 569.5073529411765,
+            "Area PGp (IPL) left": 367.95588235294116
+        },
+        "cell_density": "60.66"
+    },
+    "FG1": {
+        "connectivity": {
+            "Area MFG4 (MFG) left": 1819.5294117647059,
+            "Frontal-I.1 (GapMap) left": 1094.4779411764705,
+            "Area MFG2 (MFG) left": 492.59191176470586,
+            "Area SFG4 (SFG) left": 424.51838235294116,
+            "Area Fp1 (FPole) left": 409.3014705882353
+        },
+        "cell_density": "64.83"
+    },
+    "FG2": {
+        "connectivity": {
+            "Area FG4 (FusG) left": 6070.573529411765,
+            "Temporal-to-Parietal (GapMap) left": 5776.150735294118,
+            "Area hOc4la (LOC) left": 5071.735294117647,
+            "Area hOc4v (LingG) left": 4819.672794117647,
+            "Area FG3 (FusG) left": 3216.716911764706
+        },
+        "cell_density": "Not found"
+    }
+}
+```
+
+## Phase 2: Model Architecture and Implementation
+The anatomical blueprint was translated into a PyTorch nn.Module.
+
+- Layer Size: The **out_channels** of each convolutional layer was set to be proportional to the cell_density of the corresponding brain region. For regions where data was not found (e.g., `hOc4v`), a reasonable intermediate value was chosen.
+
+- Network Wiring: The `forward()` method was constructed to mirror the connectivity data.
+
+The primary connections (V1->V2, V2->V4, etc.) defined the main feedforward flow.
+
+A key finding was the strong connection between the ventral stream (hOc4v) and the dorsal stream (hOc5/MT, via other LOC regions). This justified the implementation of a crosstalk connection, where the output of the V4 layer contributes to the dorsal stream's processing.
+
+The `HumanVisualSystem` Model:
+```python
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class HumanVisualSystem(nn.Module):
+    def __init__(self):
+        super(HumanVisualSystem, self).__init__()
+        # Layer channel sizes are inspired by cell density values
+        self.v1 = nn.Conv2d(1, 85, 3, padding=1)
+        self.v2 = nn.Conv2d(85, 80, 3, padding=1)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.ventral_v4 = nn.Conv2d(80, 64, 3, padding=1) # Using 64 as a workaround for 'Not Found'
+        self.ventral_it = nn.Conv2d(64, 65, 3, padding=1) # Based on FG1
+        self.dorsal_mt = nn.Conv2d(80, 60, 3, padding=1)
+        self.v4_to_mt_crosstalk = nn.Conv2d(64, 60, 1)
+        self.ventral_classifier = nn.Linear(12740, 10)
+        self.dorsal_classifier = nn.Linear(11760, 10)
+
+    def forward(self, x):
+        x = F.relu(self.v1(x))
+        x = F.relu(self.v2(x))
+        x = self.pool(x)
+        
+        # Ventral stream and crosstalk signal generation
+        v4_output = F.relu(self.ventral_v4(x))
+        it_output = F.relu(self.ventral_it(v4_output))
+        it_output_flat = it_output.view(it_output.size(0), -1)
+        ventral_prediction = self.ventral_classifier(it_output_flat)
+        
+        # Dorsal stream with crosstalk integration
+        d_out = F.relu(self.dorsal_mt(x))
+        v4_to_dorsal_signal = F.relu(self.v4_to_mt_crosstalk(v4_output))
+        d_out = d_out + v4_to_dorsal_signal
+        d_out_flat = d_out.view(d_out.size(0), -1)
+        dorsal_prediction = self.dorsal_classifier(d_out_flat)
+        
+        final_prediction = (ventral_prediction + dorsal_prediction) / 2
+        return final_prediction
+```
+---
+## Phase 3: Model Training
+
+-   **Dataset:** The model was trained on the **Fashion MNIST** dataset, a standard benchmark for image classification. For efficiency on a CPU, a subset of 6,000 training images and 1,000 test images was used.
+-   **Training Parameters:**
+    -   **Loss Function:** `nn.CrossEntropyLoss`
+    -   **Optimizer:** `Adam`
+    -   **Learning Rate:** `0.001`
+    -   **Epochs:** `5`
+    -   **Batch Size:** `64`
+-   **Performance:** The model trained successfully, achieving a final accuracy of **~88%** on the test subset.
+
+---
+## Phase 4: Analysis of Results
+
+After successfully training the neuroanatomically constrained model, we performed several analyses to understand its internal representations and functional organization. The results confirm that the model learned a hierarchical and categorical representation of the input data.
+
+### Representational Similarity Analysis (RSA)
+
+We first visualized the Representational Dissimilarity Matrix (RDM) for each individual layer. The plots show a clear progression:
+-   **Early Layers (`v1`, `v2`):** Display complex, fine-grained patterns, reflecting dissimilarities based on low-level visual features like edges and textures.
+-   **Deeper Layers (`v4`, `it`, `mt`):** Exhibit a prominent block-like structure. This indicates the emergence of categorical representations, where the model groups images of the same class as being highly similar.
+
+Next, we compared these layer-specific RDMs to each other. The resulting similarity matrix reveals the network's hierarchical structure:
+
+-   **Hierarchical Clustering:** The matrix shows a clear block-diagonal pattern. The early layers (`v1`, `v2`) have highly similar representations to each other (correlation ≈ 0.87), and the deeper layers (`v4`, `it`, `mt`) form another cluster of high similarity (correlations > 0.93). The similarity *between* these two blocks is lower (≈ 0.75).
+-   **Conclusion:** This demonstrates a clear processing hierarchy. The network progressively transforms representations from low-level visual features into more abstract, categorical features as information flows from early to later stages.
+
+### Functional Connectivity (FC)
+
+We measured the correlation of activity between layers to understand how training shapes the network's functional interactions.
+
+-   **Before Training:** The FC matrix shows a mix of positive and strong negative correlations. This pattern is largely unstructured, indicating random, uncoordinated activity between layers in the untrained network.
+-   **After Training:** The connectivity pattern changes dramatically. All correlations become strongly positive. Notably, the connections between anatomically adjacent layers in our design (`v1-v2`, `v2-v4`, `v4-it`) are strengthened.
+-   **Conclusion:** This shows that the training process tunes the network's functional dynamics to align with the structured, feedforward flow of information. The strong positive correlation between `v4` and `mt` after training also validates our anatomical design choice to include a crosstalk connection. Training pushed the network's *functional* connectivity to better reflect its underlying *structural* connectivity.
+
+### t-SNE Visualization of Representational Space
+
+To visualize the structure of the learned feature space, we applied t-SNE to the activations of the final ventral stream layer (`it`).
+
+-   **Categorical Clustering:** The resulting 2D plot shows distinct clusters of data points corresponding to the 10 different classes of clothing (represented by different colors). While there is some minor overlap, the overall separation is very clear.
+-   **Conclusion:** This visualization provides strong evidence that the model has learned a feature space where different object categories are well-separated. This underlying categorical structure is what enables the model to achieve high classification accuracy.
+
+### Overall Conclusion
+
+Our anatomically constrained model successfully learned to perform the image classification task with an accuracy of ~88% (on a subset). The analyses confirm that the model developed a hierarchical processing structure that was refined and organized through training.
+
+Constraining the model with cell density and structural connectivity data resulted in a computationally "heavy" but functional network. This demonstrates a key trade-off between biological plausibility and pure engineering efficiency. 
