@@ -143,3 +143,29 @@ Then stiffness is computed with defense and the weakening from C0 applies
 
 ---
 ![Initial scenario](https://drive.google.com/file/d/1fQeFQlbHjtX4vM53U3VIJIEM9RvzXoAn/view?usp=sharing)
+
+
+# Assignment 5: Modeling in Neuroscience
+
+
+### Task 2
+Human 
+
+Ventral:
+V1, V2, V4, Lateral occipital complex, Fusiform gyrus, IT
+Dorsal:
+V1, V2, V3A, V5e, MST, Intraparietal sulcus
+
+Monkey
+
+Ventral:
+V1, V2, V4, TEO, TE, IT
+Dorsal:
+V1, V2, V3, V5, MST, LIP
+
+Marmoset
+
+Ventral: 
+V1, V2, V4, TEO, TE, Inferotemporal-like cortex
+Dorsal: 
+V1, V2, V5, MST, LIP, Posterior parietal cortex
